@@ -18,7 +18,7 @@ https://github.com/mickadespres/Python-RAT.git
 
 1. You need to specify an available port on the target system which will allow to bind the host/port parameters to the server socket.
 2. After that, you will be prompted to choose an attack option
-3. checks for uploading and downloading files. The files need to be in current working directory.
+3. Checks for uploading and downloading files. The files need to be in current working directory of the scripts.
 
 
 ### Requirements
