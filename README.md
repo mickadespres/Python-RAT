@@ -19,9 +19,10 @@ https://github.com/mickadespres/Python-RAT.git
 2. After that, you will be prompted to choose an attack option
 
 
-### Requirements 
+### Requirements
 
+* Tested with root privileges
 * A linux target system
 * A linux client system
 
-### I really appreciate all kinds of feedback. Thanks for using and testing this tool. 
+### I really appreciate all kinds of feedback. Thanks for using and testing this tool.
