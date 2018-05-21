@@ -25,5 +25,6 @@ https://github.com/mickadespres/Python-RAT.git
 * Tested with root privileges
 * A linux target system
 * A linux client system
+* The both systems need to be on the same local network
 
 ### I really appreciate all kinds of feedback. Thanks for using and testing this tool.
