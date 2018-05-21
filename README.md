@@ -12,6 +12,7 @@ https://github.com/mickadespres/Python-RAT.git
 * Get log file of the standard output stream of the target system
 * Download files from the target system (text files only)
 * Upload files on the target system (text files only)
+* Error recognition during socket creation
 
 ### Directions
 
@@ -26,5 +27,10 @@ https://github.com/mickadespres/Python-RAT.git
 * A linux target system
 * A linux client system
 * The both systems need to be on the same local network
+
+### Improvements 
+
+* Loop to perform several attacks in same session
+* 4th attack : Keylogger
 
 ### I really appreciate all kinds of feedback. Thanks for using and testing this tool.
