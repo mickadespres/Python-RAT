@@ -10,9 +10,11 @@ https://github.com/mickadespres/Python-RAT.git
 
 * Run commands on the target system (cp, mkdir, touch, rm, shutdown, reboot, ...)
 * Get log file of the standard output stream of the target system
-* Download files from the target system (text files only)
-* Upload files on the target system (text files only)
+* Download files from the target system (text files only) (with overwriting checks)
+* Upload files on the target system (text files only) (with overwriting checks)
 * Error recognition during socket creation
+* File detection during transfers
+
 
 ### Directions
 
@@ -28,9 +30,11 @@ https://github.com/mickadespres/Python-RAT.git
 * A linux client system
 * The both systems need to be on the same local network
 
+
 ### Improvements 
 
 * Loop to perform several attacks in same session
+* File detection to upload and download some files away from cwd of the scripts.
 * 4th attack : Keylogger
 
 ### I really appreciate all kinds of feedback. Thanks for using and testing this tool.
